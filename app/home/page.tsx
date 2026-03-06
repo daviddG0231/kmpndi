@@ -6,7 +6,7 @@ import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import {
   Bell, ArrowUpRight, ArrowDownLeft, Car, Ticket,
-  ParkingCircle, Users, RefreshCw, ChevronRight, AlertCircle
+  ParkingCircle, Users, ChevronRight, AlertCircle
 } from 'lucide-react'
 import { currentUser, vehicles, guestPasses, activityEntries, parkingSpots } from '@/lib/mock-data'
 
@@ -35,13 +35,10 @@ export default function HomePage() {
   return (
     <div className="phone-frame bg-bg min-h-screen safe-bottom">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-bg/80 backdrop-blur-xl px-4 pt-14 pb-2">
+      <div className="px-4 pt-14 pb-2">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-[28px] font-bold tracking-tight text-txt">Hello, {firstName}</h1>
-            <p className="text-[14px] text-txt-secondary mt-0.5">
-              Unit {activeUnit.unit} · {activeUnit.building}
-            </p>
+            <h1 className="text-[28px] font-bold tracking-tight text-txt">{firstName}</h1>
           </div>
           <button
             onClick={() => router.push('/notifications')}
@@ -55,17 +52,25 @@ export default function HomePage() {
 
       <div className="px-4 pb-4 space-y-4">
         {/* Property card */}
-        <div className="bg-accent rounded-[16px] p-4 text-white">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-white/60 mb-1">Active Property</p>
-          <p className="text-[18px] font-bold">{activeUnit.compound}</p>
-          <p className="text-[13px] text-white/70 mt-0.5">Unit {activeUnit.unit} · {activeUnit.building}</p>
-          <button
-            onClick={() => router.push('/select-property')}
-            className="mt-3 flex items-center gap-1 text-[12px] text-white/80 font-medium"
-          >
-            <RefreshCw size={12} />
-            Switch property
-          </button>
+        <div className="bg-accent rounded-[14px] p-4 text-white">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-widest text-white/50 mb-1">Property</p>
+              <p className="text-[17px] font-semibold">{activeUnit.compound}</p>
+              <p className="text-[13px] text-white/60 mt-0.5">
+                Unit {activeUnit.unit} · {activeUnit.building}
+                {currentUser.units.length > 1 && (
+                  <span className="text-white/40"> · {currentUser.units.length} total</span>
+                )}
+              </p>
+            </div>
+            <button
+              onClick={() => router.push('/select-property')}
+              className="mt-0.5 px-2.5 py-1 rounded-full bg-white/10 text-[11px] text-white/80 font-medium active:bg-white/20"
+            >
+              Switch
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

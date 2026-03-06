@@ -48,9 +48,12 @@ export default function AuthPage() {
     <div className="phone-frame bg-bg min-h-screen flex flex-col">
       <div className="flex-1 flex flex-col justify-center px-6 pb-10">
         {/* Branding */}
-        <div className="mb-12">
-          <h1 className="text-[22px] font-bold text-accent tracking-tight">Kmpndi</h1>
-          <p className="text-[13px] text-txt-secondary mt-1">Gated community access control</p>
+        <div className="mb-10">
+          <div className="w-12 h-12 rounded-[14px] bg-accent flex items-center justify-center mb-4">
+            <span className="text-white text-[18px] font-bold">K</span>
+          </div>
+          <h1 className="text-[26px] font-bold text-txt tracking-tight">Kmpndi</h1>
+          <p className="text-[14px] text-txt-secondary mt-1">Community access management</p>
         </div>
 
         {step === 'phone' ? (
@@ -133,6 +136,11 @@ export default function AuthPage() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Footer */}
+      <div className="px-6 pb-8 text-center">
+        <p className="text-[11px] text-txt-tertiary">v1.0.0 · Demo Mode</p>
       </div>
     </div>
   )

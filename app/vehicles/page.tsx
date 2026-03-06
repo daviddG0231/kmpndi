@@ -20,6 +20,7 @@ export default function VehiclesPage() {
     <div className="phone-frame bg-bg min-h-screen safe-bottom">
       <PageHeader
         title="Vehicles"
+        subtitle={`${activeCount} active · ${vehicles.length} total`}
         large
         rightAction={
           <button

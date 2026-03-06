@@ -30,6 +30,7 @@ export default function PassesPage() {
     <div className="phone-frame bg-bg min-h-screen safe-bottom">
       <PageHeader
         title="Guest Passes"
+        subtitle={`${guestPasses.filter(p => p.status === 'active').length} active`}
         large
         rightAction={
           <button
