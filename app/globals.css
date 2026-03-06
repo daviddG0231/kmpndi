@@ -1,72 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --bg: #FAFAF8;
-  --card: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-secondary: #F5F4F1;
+  --text: #1C1C1E;
+  --text-secondary: #86868B;
+  --text-tertiary: #AEAEB2;
+  --separator: #E5E5EA;
+  --separator-opaque: #C6C6C8;
+  --fill: #F2F2F7;
   --accent: #1B4D3E;
-  --accent-warm: #D4A853;
-  --text: #1A1A1A;
-  --muted: #8C8C8C;
-  --border: #E8E5DF;
+  --accent-light: #EBF3EF;
+  --gold: #B8860B;
+  --gold-light: #FBF5E6;
+  --red: #FF3B30;
+  --green: #34C759;
+  --orange: #FF9500;
+  --blue: #007AFF;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  -webkit-tap-highlight-color: transparent;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 html, body {
-  background-color: var(--bg);
+  background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.47;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D1CCC4; border-radius: 2px; }
+::-webkit-scrollbar { display: none; }
 
-/* Input autofill */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px #FFFFFF inset;
-  -webkit-text-fill-color: #1A1A1A;
-  caret-color: #1A1A1A;
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
+  -webkit-text-fill-color: var(--text);
 }
 
 @layer utilities {
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  
-  .glass {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(0,0,0,0.06);
-  }
-
-  .safe-bottom {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
-  }
-
-  .mono { font-family: 'JetBrains Mono', monospace; }
+  .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: 'tnum'; }
 }
 
-/* Phone frame clamp on desktop */
 .phone-frame {
   max-width: 430px;
   min-height: 100dvh;
   margin: 0 auto;
-  position: relative;
-  overflow: hidden;
-  background-color: var(--bg);
+  background: var(--bg);
 }

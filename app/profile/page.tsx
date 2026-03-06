@@ -1,145 +1,132 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import {
-  Users, Bell, Shield, Settings, ChevronRight,
-  Phone, Mail, Building2, UserPen, LogOut, Repeat, Home
-} from 'lucide-react'
+import PageHeader from '@/components/layout/PageHeader'
 import BottomNav from '@/components/layout/BottomNav'
-import { currentUser, userUnits, vehicles, guestPasses } from '@/lib/mock-data'
+import Badge from '@/components/ui/Badge'
+import {
+  ChevronRight, Users, Bell, Shield, Settings, Edit3,
+  Building2, Home
+} from 'lucide-react'
+import { currentUser } from '@/lib/mock-data'
+
+function MenuRow({
+  icon, label, badge, onPress,
+}: {
+  icon: React.ReactNode
+  label: string
+  badge?: string
+  onPress: () => void
+}) {
+  return (
+    <button
+      onClick={onPress}
+      className="w-full px-4 py-3.5 flex items-center gap-3 text-left active:bg-fill transition-colors"
+    >
+      <div className="w-8 h-8 rounded-[8px] bg-accent-light flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <span className="flex-1 text-[15px] text-txt">{label}</span>
+      {badge && <Badge label={badge} variant="red" />}
+      <ChevronRight size={16} className="text-txt-tertiary shrink-0" />
+    </button>
+  )
+}
 
 export default function ProfilePage() {
   const router = useRouter()
-  const activePasses = guestPasses.filter(p => p.status === 'active').length
-  const activeUnit = userUnits.find(u => u.id === currentUser.activeUnitId)!
-
-  const menuSections = [
-    {
-      title: 'Properties',
-      items: [
-        { label: 'Switch Property', desc: `${userUnits.length} properties`, icon: Repeat, path: '/select-property', badge: userUnits.length },
-        { label: 'My Units', desc: `Currently: Unit ${activeUnit.unit}`, icon: Home, path: '/select-property' },
-      ]
-    },
-    {
-      title: 'Manage',
-      items: [
-        { label: 'Family Members', desc: '3 members', icon: Users, path: '/profile/family', badge: 1 },
-        { label: 'Notifications', desc: 'Alerts & preferences', icon: Bell, path: '/notifications' },
-        { label: 'Security', desc: 'PIN, biometrics', icon: Shield, path: '/profile/settings' },
-      ]
-    },
-    {
-      title: 'Settings',
-      items: [
-        { label: 'App Settings', desc: 'Language, theme', icon: Settings, path: '/profile/settings' },
-        { label: 'Edit Profile', desc: 'Name, email, phone', icon: UserPen, path: '/profile/settings' },
-      ]
-    }
-  ]
+  const user = currentUser
+  const initials = user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+  const memberSince = new Date(user.memberSince).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  const activeUnit = user.units.find(u => u.id === user.activeUnitId)!
 
   return (
-    <div className="min-h-screen bg-sand-50">
-      <div className="px-5 pt-14 pb-2 flex items-end justify-between">
-        <h1 className="text-xl font-bold text-ink">Profile</h1>
-        <button
-          onClick={() => router.push('/profile/settings')}
-          className="w-10 h-10 rounded-xl bg-white border border-sand-200 flex items-center justify-center shadow-card"
-        >
-          <Settings size={18} className="text-ink" strokeWidth={1.6} />
-        </button>
-      </div>
+    <div className="phone-frame bg-bg min-h-screen safe-bottom">
+      <PageHeader title={user.name} large />
 
-      <div className="px-5 pt-4">
-        {/* Profile card */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-sand-200 rounded-2xl p-5 shadow-card mb-4"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-14 h-14 rounded-2xl bg-forest flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-lg font-bold">
-                {currentUser.name.split(' ').map(n => n[0]).join('')}
-              </span>
-            </div>
-            <div className="flex-1">
-              <h2 className="text-ink font-bold">{currentUser.name}</h2>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <Building2 size={11} className="text-sand-400" />
-                <span className="text-xs text-sand-400">Unit {currentUser.unit} · {currentUser.building}</span>
+      <div className="px-4 pb-6 space-y-5">
+        {/* Avatar + Info */}
+        <div className="bg-surface rounded-[12px] p-5 flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center shrink-0">
+            <span className="text-[22px] font-bold text-white">{initials}</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-[17px] font-semibold text-txt truncate">{user.name}</p>
+            <p className="text-[13px] text-txt-secondary font-mono">{user.phone}</p>
+            <p className="text-[13px] text-txt-secondary truncate">{user.email}</p>
+            <p className="text-[12px] text-txt-tertiary mt-0.5">Member since {memberSince}</p>
+          </div>
+        </div>
+
+        {/* Properties */}
+        <div>
+          <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide mb-1.5">Properties</p>
+          <div className="bg-surface rounded-[12px] divide-y divide-sep">
+            {user.units.map(unit => (
+              <div
+                key={unit.id}
+                className={`px-4 py-3.5 flex items-center gap-3 ${unit.id === user.activeUnitId ? 'bg-accent-light' : ''}`}
+              >
+                <div className={`w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0 ${unit.id === user.activeUnitId ? 'bg-accent' : 'bg-fill'}`}>
+                  <Home size={16} className={unit.id === user.activeUnitId ? 'text-white' : 'text-txt-tertiary'} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-medium text-txt">Unit {unit.unit} · {unit.building}</p>
+                  <p className="text-[12px] text-txt-secondary">{unit.compound}</p>
+                </div>
+                {unit.id === user.activeUnitId && <Badge label="Active" variant="green" />}
+                {unit.isDefault && unit.id !== user.activeUnitId && <Badge label="Default" variant="blue" />}
               </div>
-              <span className="text-[10px] font-semibold bg-gold-50 text-gold-dark px-2 py-0.5 rounded-full mt-1.5 inline-block">
-                ★ Member since March 2022
-              </span>
-            </div>
+            ))}
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 text-xs text-ink-muted">
-              <Phone size={12} />
-              <span>{currentUser.phone}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-ink-muted">
-              <Mail size={12} />
-              <span>{currentUser.email}</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 mb-5">
-          {[
-            { label: 'Vehicles', value: vehicles.length },
-            { label: 'Active Passes', value: activePasses },
-            { label: 'Family', value: 3 },
-          ].map(s => (
-            <div key={s.label} className="bg-white border border-sand-200 rounded-xl py-3 text-center shadow-card">
-              <p className="text-lg font-bold font-mono text-ink">{s.value}</p>
-              <p className="text-[10px] text-sand-400 font-medium uppercase tracking-wider">{s.label}</p>
-            </div>
-          ))}
         </div>
 
         {/* Menu sections */}
-        {menuSections.map(section => (
-          <div key={section.title} className="mb-4">
-            <p className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2 px-1">
-              {section.title}
-            </p>
-            <div className="bg-white border border-sand-200 rounded-2xl divide-y divide-sand-100 shadow-card overflow-hidden">
-              {section.items.map(item => (
-                <button
-                  key={item.label}
-                  onClick={() => router.push(item.path)}
-                  className="w-full flex items-center gap-3.5 px-4 py-3.5 hover:bg-sand-50 transition-colors text-left"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-sand-100 flex items-center justify-center flex-shrink-0">
-                    <item.icon size={16} className="text-ink" strokeWidth={1.6} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-ink">{item.label}</p>
-                    <p className="text-xs text-sand-400">{item.desc}</p>
-                  </div>
-                  {'badge' in item && item.badge && (
-                    <span className="w-5 h-5 bg-forest text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                      {item.badge}
-                    </span>
-                  )}
-                  <ChevronRight size={14} className="text-sand-300" />
-                </button>
-              ))}
-            </div>
+        <div>
+          <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide mb-1.5">Account</p>
+          <div className="bg-surface rounded-[12px] divide-y divide-sep">
+            <MenuRow
+              icon={<Edit3 size={16} className="text-accent" />}
+              label="Edit Profile"
+              onPress={() => {}}
+            />
+            <MenuRow
+              icon={<Building2 size={16} className="text-accent" />}
+              label="Manage Properties"
+              onPress={() => router.push('/select-property')}
+            />
           </div>
-        ))}
+        </div>
 
-        {/* Sign out */}
-        <button className="w-full flex items-center justify-center gap-2 py-3 text-status-danger text-sm font-semibold mb-32">
-          <LogOut size={16} />
-          Sign Out
-        </button>
+        <div>
+          <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide mb-1.5">Household</p>
+          <div className="bg-surface rounded-[12px] divide-y divide-sep">
+            <MenuRow
+              icon={<Users size={16} className="text-accent" />}
+              label="Family Members"
+              onPress={() => router.push('/profile/family')}
+            />
+          </div>
+        </div>
 
-        <div className="text-center pb-4">
-          <p className="text-[10px] text-sand-300 font-mono">Kmpndi v1.0.0 · {currentUser.compound}</p>
+        <div>
+          <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide mb-1.5">Preferences</p>
+          <div className="bg-surface rounded-[12px] divide-y divide-sep">
+            <MenuRow
+              icon={<Bell size={16} className="text-accent" />}
+              label="Notifications"
+              onPress={() => router.push('/notifications')}
+            />
+            <MenuRow
+              icon={<Shield size={16} className="text-accent" />}
+              label="Security"
+              onPress={() => {}}
+            />
+            <MenuRow
+              icon={<Settings size={16} className="text-accent" />}
+              label="App Settings"
+              onPress={() => router.push('/profile/settings')}
+            />
+          </div>
         </div>
       </div>
 

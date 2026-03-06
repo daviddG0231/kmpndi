@@ -1,52 +1,38 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { ArrowLeft } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 
 interface PageHeaderProps {
   title: string
   subtitle?: string
   backPath?: string
   rightAction?: React.ReactNode
-  transparent?: boolean
+  large?: boolean
 }
 
-export default function PageHeader({
-  title,
-  subtitle,
-  backPath,
-  rightAction,
-  transparent = false,
-}: PageHeaderProps) {
+export default function PageHeader({ title, subtitle, backPath, rightAction, large }: PageHeaderProps) {
   const router = useRouter()
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`sticky top-0 z-40 px-5 pt-14 pb-4 ${
-        transparent
-          ? 'bg-transparent'
-          : 'bg-sand-50/95 backdrop-blur-xl border-b border-sand-200'
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        {backPath && (
-          <button
-            onClick={() => router.push(backPath)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-sand-200 hover:bg-sand-100 transition-colors shadow-card"
-          >
-            <ArrowLeft size={18} className="text-ink" />
-          </button>
-        )}
-        <div className="flex-1">
-          <h1 className="text-lg font-bold text-ink">{title}</h1>
-          {subtitle && (
-            <p className="text-xs text-sand-400 mt-0.5">{subtitle}</p>
-          )}
+    <div className="sticky top-0 z-40 bg-bg/80 backdrop-blur-xl">
+      <div className="px-4 pt-14 pb-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 min-w-0">
+            {backPath && (
+              <button onClick={() => router.push(backPath)} className="-ml-2 p-2 text-accent">
+                <ChevronLeft size={24} strokeWidth={2.5} />
+              </button>
+            )}
+            <div className="min-w-0">
+              <h1 className={`font-semibold text-txt truncate ${large ? 'text-[28px] tracking-tight' : 'text-[17px]'}`}>
+                {title}
+              </h1>
+              {subtitle && <p className="text-[13px] text-txt-secondary">{subtitle}</p>}
+            </div>
+          </div>
+          {rightAction && <div className="shrink-0 ml-3">{rightAction}</div>}
         </div>
-        {rightAction && <div>{rightAction}</div>}
       </div>
-    </motion.div>
+    </div>
   )
 }

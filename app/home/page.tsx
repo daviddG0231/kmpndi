@@ -1,197 +1,148 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import {
-  Car, Ticket, Users, Clock, Bell, ChevronRight,
-  ArrowUpRight, ArrowDownLeft, AlertCircle, Plus, ParkingSquare, Repeat
-} from 'lucide-react'
 import BottomNav from '@/components/layout/BottomNav'
-import { currentUser, userUnits, vehicles, guestPasses, activityEntries, notifications } from '@/lib/mock-data'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
+import {
+  Bell, ArrowUpRight, ArrowDownLeft, Car, Ticket,
+  ParkingCircle, Users, RefreshCw, ChevronRight, AlertCircle
+} from 'lucide-react'
+import { currentUser, vehicles, guestPasses, activityEntries, parkingSpots } from '@/lib/mock-data'
 
-const stagger = { animate: { transition: { staggerChildren: 0.06 } } }
-const fadeUp = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+function formatTime(ts: string) {
+  const d = new Date(ts)
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
 export default function HomePage() {
   const router = useRouter()
-  const activeUnit = userUnits.find(u => u.id === currentUser.activeUnitId)!
-  const sameCompoundUnits = userUnits.filter(u => u.compoundId === activeUnit.compoundId)
-  const unread = notifications.filter(n => !n.read).length
+  const firstName = currentUser.name.split(' ')[0]
+  const activeUnit = currentUser.units.find(u => u.id === currentUser.activeUnitId)!
   const activeVehicles = vehicles.filter(v => v.status === 'active').length
   const activePasses = guestPasses.filter(p => p.status === 'active').length
-  const recent = activityEntries.slice(0, 4)
+  const occupiedSpots = parkingSpots.filter(s => s.isOccupied).length
 
-  const getActivityIcon = (type: string, status: string) => {
-    if (status === 'denied') return <AlertCircle size={14} className="text-status-danger" />
-    if (type === 'entry') return <ArrowDownLeft size={14} className="text-status-active" />
-    if (type === 'exit') return <ArrowUpRight size={14} className="text-ink-muted" />
-    return <Ticket size={14} className="text-forest" />
-  }
+  const recentActivity = activityEntries.slice(0, 4)
 
-  const formatTime = (ts: string) => {
-    const d = new Date(ts)
-    const now = new Date('2026-03-06T14:00:00')
-    const diff = (now.getTime() - d.getTime()) / 60000
-    if (diff < 60) return `${Math.round(diff)}m`
-    if (diff < 1440) return `${Math.round(diff / 60)}h`
-    return `${Math.round(diff / 1440)}d`
+  function activityIcon(type: string, status: string) {
+    if (status === 'denied') return <AlertCircle size={16} className="text-sys-red" />
+    if (type === 'entry') return <ArrowDownLeft size={16} className="text-sys-green" />
+    if (type === 'exit') return <ArrowUpRight size={16} className="text-sys-orange" />
+    return <Ticket size={16} className="text-sys-blue" />
   }
 
   return (
-    <div className="min-h-screen bg-sand-50">
+    <div className="phone-frame bg-bg min-h-screen safe-bottom">
       {/* Header */}
-      <div className="px-5 pt-14 pb-2">
+      <div className="sticky top-0 z-40 bg-bg/80 backdrop-blur-xl px-4 pt-14 pb-2">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-medium text-ink-muted mb-0.5">Good afternoon</p>
-            <h1 className="text-xl font-bold text-ink">
-              {currentUser.name.split(' ')[0]}
-            </h1>
-            <p className="text-xs text-sand-400 mt-0.5 font-mono">
-              {currentUser.building} · Unit {currentUser.unit}
+            <h1 className="text-[28px] font-bold tracking-tight text-txt">Hello, {firstName}</h1>
+            <p className="text-[14px] text-txt-secondary mt-0.5">
+              Unit {activeUnit.unit} · {activeUnit.building}
             </p>
           </div>
           <button
             onClick={() => router.push('/notifications')}
-            className="relative w-10 h-10 rounded-xl bg-white border border-sand-200 flex items-center justify-center shadow-card"
+            className="mt-1 w-[38px] h-[38px] rounded-full bg-fill flex items-center justify-center relative"
           >
-            <Bell size={18} className="text-ink" strokeWidth={1.6} />
-            {unread > 0 && (
-              <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-status-danger rounded-full text-[9px] font-bold text-white flex items-center justify-center" style={{width:18,height:18}}>
-                {unread}
-              </span>
-            )}
+            <Bell size={20} className="text-txt-secondary" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-sys-red rounded-full" />
           </button>
         </div>
       </div>
 
-      <motion.div
-        variants={stagger}
-        initial="initial"
-        animate="animate"
-        className="px-5 pt-4"
-      >
-        {/* Compound card */}
-        <motion.div
-          variants={fadeUp}
-          className="bg-forest rounded-2xl p-5 mb-5"
-        >
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-white/60 text-xs font-medium uppercase tracking-wider">Your property</p>
-            <button
-              onClick={() => router.push('/select-property')}
-              className="flex items-center gap-1 text-[10px] font-semibold bg-white/15 text-white px-2.5 py-1 rounded-full hover:bg-white/25 transition-colors"
-            >
-              <Repeat size={10} /> Switch
-            </button>
-          </div>
-          <p className="text-white text-lg font-bold">{activeUnit.compound}</p>
-          <p className="text-white/50 text-xs mb-4">
-            Unit {activeUnit.unit} · {activeUnit.building}
-            {sameCompoundUnits.length > 1 && (
-              <span className="text-gold-light ml-1">
-                (+{sameCompoundUnits.length - 1} more unit{sameCompoundUnits.length > 2 ? 's' : ''})
-              </span>
-            )}
-          </p>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Vehicles', value: activeVehicles },
-              { label: 'Passes', value: activePasses },
-              { label: 'Parking', value: `${activeUnit.parkingUsed}/${activeUnit.parkingAllowance}` },
-            ].map(s => (
-              <div key={s.label} className="bg-white/10 rounded-xl px-3 py-2.5 text-center">
-                <p className="text-white font-bold text-lg font-mono">{s.value}</p>
-                <p className="text-white/50 text-[10px] font-medium uppercase tracking-wide">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Quick Action — Guest Pass (prominent) */}
-        <motion.div variants={fadeUp}>
+      <div className="px-4 pb-4 space-y-4">
+        {/* Property card */}
+        <div className="bg-accent rounded-[16px] p-4 text-white">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-white/60 mb-1">Active Property</p>
+          <p className="text-[18px] font-bold">{activeUnit.compound}</p>
+          <p className="text-[13px] text-white/70 mt-0.5">Unit {activeUnit.unit} · {activeUnit.building}</p>
           <button
-            onClick={() => router.push('/passes/create')}
-            className="w-full bg-gold-50 border-2 border-gold/30 rounded-2xl p-4 flex items-center gap-4 mb-5 hover:border-gold/50 transition-all active:scale-[0.99]"
+            onClick={() => router.push('/select-property')}
+            className="mt-3 flex items-center gap-1 text-[12px] text-white/80 font-medium"
           >
-            <div className="w-12 h-12 rounded-xl bg-gold/15 flex items-center justify-center flex-shrink-0">
-              <Plus size={22} className="text-gold-dark" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-ink font-bold text-sm">Create Guest Pass</p>
-              <p className="text-ink-muted text-xs mt-0.5">Generate a QR code for visitors</p>
-            </div>
-            <ChevronRight size={16} className="text-gold-dark flex-shrink-0" />
+            <RefreshCw size={12} />
+            Switch property
           </button>
-        </motion.div>
+        </div>
 
-        {/* Grid actions */}
-        <motion.div variants={fadeUp} className="grid grid-cols-4 gap-2.5 mb-6">
-          {[
-            { label: 'Vehicles', icon: Car, path: '/vehicles', count: activeVehicles },
-            { label: 'Passes', icon: Ticket, path: '/passes', count: activePasses },
-            { label: 'Parking', icon: ParkingSquare, path: '/parking', count: 2 },
-            { label: 'Visitor', icon: Users, path: '/visitor', count: null },
-          ].map((item) => (
-            <button
-              key={item.path}
-              onClick={() => router.push(item.path)}
-              className="bg-white border border-sand-200 rounded-2xl p-3 flex flex-col items-center gap-2 shadow-card hover:shadow-card-hover hover:border-sand-300 transition-all active:scale-[0.97]"
-            >
-              <div className="w-10 h-10 rounded-xl bg-sand-100 flex items-center justify-center">
-                <item.icon size={18} className="text-ink" strokeWidth={1.6} />
-              </div>
-              <p className="text-[11px] font-semibold text-ink">{item.label}</p>
-              {item.count !== null && (
-                <span className="text-[10px] font-mono font-bold text-forest bg-forest-50 px-2 py-0.5 rounded-full">
-                  {item.count}
-                </span>
-              )}
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Recent Activity */}
-        <motion.div variants={fadeUp} className="mb-32">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold text-ink-muted uppercase tracking-wider">
-              Recent activity
-            </h2>
-            <button
-              onClick={() => router.push('/activity')}
-              className="text-xs text-forest font-semibold"
-            >
-              See all →
-            </button>
+        {/* Stats */}
+        <Card padding={false}>
+          <div className="flex divide-x divide-sep">
+            <div className="flex-1 py-4 flex flex-col items-center">
+              <span className="text-[22px] font-mono font-bold text-txt">{activeVehicles}</span>
+              <span className="text-[11px] text-txt-secondary mt-0.5">Vehicles</span>
+            </div>
+            <div className="flex-1 py-4 flex flex-col items-center">
+              <span className="text-[22px] font-mono font-bold text-txt">{activePasses}</span>
+              <span className="text-[11px] text-txt-secondary mt-0.5">Passes</span>
+            </div>
+            <div className="flex-1 py-4 flex flex-col items-center">
+              <span className="text-[22px] font-mono font-bold text-txt">{occupiedSpots}</span>
+              <span className="text-[11px] text-txt-secondary mt-0.5">Parking</span>
+            </div>
           </div>
-          <div className="bg-white border border-sand-200 rounded-2xl divide-y divide-sand-100 shadow-card overflow-hidden">
-            {recent.map((item) => (
+        </Card>
+
+        {/* New Guest Pass */}
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
+          onClick={() => router.push('/passes/create')}
+          icon={<Ticket size={18} />}
+        >
+          New Guest Pass
+        </Button>
+
+        {/* Quick actions */}
+        <div>
+          <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide mb-1.5">Quick Actions</p>
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { label: 'Visitor', icon: <Users size={22} className="text-accent" />, path: '/visitor' },
+              { label: 'Parking', icon: <ParkingCircle size={22} className="text-accent" />, path: '/parking' },
+              { label: 'Activity', icon: <ArrowDownLeft size={22} className="text-accent" />, path: '/activity' },
+              { label: 'Family', icon: <Users size={22} className="text-accent" />, path: '/profile/family' },
+            ].map(item => (
               <button
-                key={item.id}
-                onClick={() => router.push('/activity')}
-                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-sand-50 transition-colors text-left"
+                key={item.label}
+                onClick={() => router.push(item.path)}
+                className="bg-surface rounded-[12px] p-3 flex flex-col items-center gap-1.5 active:bg-fill"
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  item.status === 'denied' ? 'bg-red-50' :
-                  item.type === 'entry' ? 'bg-green-50' :
-                  item.type === 'exit' ? 'bg-sand-100' : 'bg-forest-50'
-                }`}>
-                  {getActivityIcon(item.type, item.status)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-ink text-sm font-medium truncate">{item.description}</p>
-                  <p className="text-sand-400 text-xs truncate">
-                    {item.gate} · {item.vehicle || item.person || ''}
-                  </p>
-                </div>
-                <span className="text-[11px] text-sand-400 font-mono flex-shrink-0">{formatTime(item.timestamp)}</span>
+                {item.icon}
+                <span className="text-[11px] text-txt-secondary font-medium">{item.label}</span>
               </button>
             ))}
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+
+        {/* Recent activity */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide">Recent Activity</p>
+            <button onClick={() => router.push('/activity')} className="text-[13px] text-accent">See all</button>
+          </div>
+          <div className="bg-surface rounded-[12px] divide-y divide-sep">
+            {recentActivity.map(entry => (
+              <div key={entry.id} className="px-4 py-3.5 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-fill flex items-center justify-center shrink-0">
+                  {activityIcon(entry.type, entry.status)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] text-txt truncate">{entry.description}</p>
+                  <p className="text-[12px] text-txt-tertiary">{entry.gate}</p>
+                </div>
+                <span className="text-[12px] font-mono text-txt-tertiary shrink-0">
+                  {formatTime(entry.timestamp)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <BottomNav />
     </div>

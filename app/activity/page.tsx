@@ -1,156 +1,79 @@
 'use client'
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import {
-  ArrowDownLeft, ArrowUpRight, Ticket, Users, AlertCircle,
-  Filter, Calendar
-} from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
 import BottomNav from '@/components/layout/BottomNav'
-import Badge from '@/components/ui/Badge'
 import { activityEntries } from '@/lib/mock-data'
+import { ArrowDownLeft, ArrowUpRight, Ticket, AlertCircle, Users } from 'lucide-react'
 
-const filters = ['All', 'Entry', 'Exit', 'Pass', 'Alert']
+function formatDate(ts: string) {
+  const d = new Date(ts)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
 
-function getIcon(type: string, status: string) {
-  if (status === 'denied') return { icon: AlertCircle, bg: 'bg-status-danger/15', color: 'text-status-danger' }
-  if (type === 'entry') return { icon: ArrowDownLeft, bg: 'bg-status-active/15', color: 'text-status-active' }
-  if (type === 'exit') return { icon: ArrowUpRight, bg: 'bg-slate-500/15', color: 'text-sand-400' }
-  if (type === 'pass_used') return { icon: Ticket, bg: 'bg-forest/15', color: 'text-forest' }
-  return { icon: Users, bg: 'bg-warning/15', color: 'text-status-warning' }
+  if (d.toDateString() === today.toDateString()) return 'Today'
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
-function groupByDate(entries: typeof activityEntries) {
-  const groups: Record<string, typeof activityEntries> = {}
-  entries.forEach(e => {
-    const date = new Date(e.timestamp).toLocaleDateString('en-US', {
-      weekday: 'long', month: 'long', day: 'numeric'
-    })
-    if (!groups[date]) groups[date] = []
-    groups[date].push(e)
-  })
-  return groups
+function formatTime(ts: string) {
+  return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+function ActivityIcon({ type, status }: { type: string; status: string }) {
+  if (status === 'denied') return <AlertCircle size={18} className="text-sys-red" />
+  if (type === 'entry') return <ArrowDownLeft size={18} className="text-sys-green" />
+  if (type === 'exit') return <ArrowUpRight size={18} className="text-sys-orange" />
+  if (type === 'pass_used') return <Ticket size={18} className="text-sys-blue" />
+  if (type === 'visitor') return <Users size={18} className="text-sys-blue" />
+  return <AlertCircle size={18} className="text-txt-tertiary" />
 }
 
 export default function ActivityPage() {
-  const [filter, setFilter] = useState('All')
-
-  const filtered = activityEntries.filter(e => {
-    if (filter === 'All') return true
-    if (filter === 'Entry') return e.type === 'entry'
-    if (filter === 'Exit') return e.type === 'exit'
-    if (filter === 'Pass') return e.type === 'pass_used'
-    if (filter === 'Alert') return e.status === 'denied' || e.type === 'vehicle_flagged'
-    return true
-  })
-
-  const grouped = groupByDate(filtered)
-
-  const formatTime = (ts: string) =>
-    new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  // Group by date
+  const grouped = activityEntries.reduce<Record<string, typeof activityEntries>>((acc, entry) => {
+    const label = formatDate(entry.timestamp)
+    if (!acc[label]) acc[label] = []
+    acc[label].push(entry)
+    return acc
+  }, {})
 
   return (
-    <div className="min-h-screen bg-sand-50">
-      <PageHeader
-        title="Activity History"
-        subtitle="All gate events"
-      />
+    <div className="phone-frame bg-bg min-h-screen safe-bottom">
+      <PageHeader title="Activity" large />
 
-      {/* Stats row */}
-      <div className="px-5 mb-4">
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { label: 'Total', value: activityEntries.length, color: 'text-ink' },
-            { label: 'Entry', value: activityEntries.filter(e => e.type === 'entry').length, color: 'text-status-active' },
-            { label: 'Exit', value: activityEntries.filter(e => e.type === 'exit').length, color: 'text-sand-400' },
-            { label: 'Alerts', value: activityEntries.filter(e => e.status === 'denied').length, color: 'text-status-danger' },
-          ].map(s => (
-            <div key={s.label} className="bg-white border border-sand-200 rounded-2xl p-3 text-center">
-              <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
-              <p className="text-[10px] text-sand-400 mt-0.5">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="px-5 mb-4">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {filters.map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap border transition-all flex-shrink-0 ${
-                filter === f
-                  ? 'bg-forest border-forest text-ink'
-                  : 'bg-white border-sand-200 text-sand-400 hover:border-sand-300'
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Activity list */}
-      <div className="px-5 pb-32">
+      <div className="px-4 pb-6 space-y-5">
         {Object.entries(grouped).map(([date, entries]) => (
-          <div key={date} className="mb-5">
-            <div className="flex items-center gap-2 mb-2.5">
-              <Calendar size={12} className="text-sand-400" />
-              <p className="text-xs font-bold text-sand-400 uppercase tracking-wide">{date}</p>
-            </div>
-            <div className="flex flex-col gap-2">
-              {entries.map((entry, i) => {
-                const { icon: Icon, bg, color } = getIcon(entry.type, entry.status)
-                return (
-                  <motion.div
-                    key={entry.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="bg-white border border-sand-200 rounded-2xl p-4 flex items-start gap-3"
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${bg}`}>
-                      <Icon size={18} className={color} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-ink text-sm font-semibold leading-tight">
-                          {entry.description}
-                        </p>
-                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                          <span className="text-xs text-sand-400">{formatTime(entry.timestamp)}</span>
-                          {entry.status === 'denied' && (
-                            <Badge label="Denied" variant="danger" size="sm" />
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-sand-400 text-xs mt-1">{entry.gate}</p>
-                      {(entry.vehicle || entry.person) && (
-                        <p className="text-sand-400 text-xs mt-0.5 font-medium">
-                          {entry.vehicle || entry.person}
-                        </p>
-                      )}
-                      {entry.details && (
-                        <p className="text-sand-300 text-xs mt-0.5 italic">{entry.details}</p>
-                      )}
-                    </div>
-                  </motion.div>
-                )
-              })}
+          <div key={date}>
+            <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide mb-1.5">{date}</p>
+            <div className="bg-surface rounded-[12px] divide-y divide-sep">
+              {entries.map(entry => (
+                <div key={entry.id} className="px-4 py-3.5 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-fill flex items-center justify-center shrink-0 mt-0.5">
+                    <ActivityIcon type={entry.type} status={entry.status} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] text-txt">{entry.description}</p>
+                    {(entry.vehicle || entry.person) && (
+                      <p className="text-[12px] text-txt-secondary font-mono mt-0.5">
+                        {entry.vehicle || entry.person}
+                      </p>
+                    )}
+                    <p className="text-[12px] text-txt-tertiary mt-0.5">{entry.gate}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <span className="text-[12px] font-mono text-txt-tertiary">{formatTime(entry.timestamp)}</span>
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        background: entry.status === 'success' ? '#34C759' : entry.status === 'denied' ? '#FF3B30' : '#FF9500',
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
-
-        {filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">
-              <Filter size={24} className="text-sand-300" />
-            </div>
-            <p className="text-sand-400 font-semibold">No {filter.toLowerCase()} events</p>
-          </div>
-        )}
       </div>
 
       <BottomNav />

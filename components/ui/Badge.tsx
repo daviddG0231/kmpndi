@@ -1,38 +1,20 @@
 interface BadgeProps {
   label: string
-  variant?: 'success' | 'warning' | 'danger' | 'info' | 'neutral'
-  dot?: boolean
+  variant?: 'green' | 'orange' | 'red' | 'blue' | 'gray'
   size?: 'sm' | 'md'
 }
 
-const variants = {
-  success: 'bg-status-active/15 text-status-active border-success/30',
-  warning: 'bg-warning/15 text-status-warning border-warning/30',
-  danger: 'bg-status-danger/15 text-status-danger border-danger/30',
-  info: 'bg-forest/15 text-forest-light border-forest/30',
-  neutral: 'bg-white/10 text-sand-400 border-sand-300',
+const styles: Record<string, string> = {
+  green: 'bg-[#34C75920] text-sys-green',
+  orange: 'bg-[#FF950020] text-sys-orange',
+  red: 'bg-[#FF3B3020] text-sys-red',
+  blue: 'bg-[#007AFF20] text-sys-blue',
+  gray: 'bg-fill text-txt-secondary',
 }
 
-const dotColors = {
-  success: 'bg-status-active',
-  warning: 'bg-warning',
-  danger: 'bg-status-danger',
-  info: 'bg-forest',
-  neutral: 'bg-slate-400',
-}
-
-export default function Badge({ label, variant = 'neutral', dot = false, size = 'sm' }: BadgeProps) {
+export default function Badge({ label, variant = 'gray', size = 'sm' }: BadgeProps) {
   return (
-    <span
-      className={`
-        inline-flex items-center gap-1.5 border rounded-full font-semibold
-        ${variants[variant]}
-        ${size === 'sm' ? 'text-[10px] px-2 py-0.5' : 'text-xs px-3 py-1'}
-      `}
-    >
-      {dot && (
-        <span className={`w-1.5 h-1.5 rounded-full ${dotColors[variant]}`} />
-      )}
+    <span className={`inline-flex items-center font-medium rounded-full ${styles[variant]} ${size === 'sm' ? 'text-[11px] px-2 py-[2px]' : 'text-[13px] px-2.5 py-[3px]'}`}>
       {label}
     </span>
   )

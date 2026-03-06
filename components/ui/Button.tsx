@@ -1,10 +1,9 @@
 'use client'
-import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 
 interface ButtonProps {
   children: React.ReactNode
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   disabled?: boolean
@@ -15,54 +14,30 @@ interface ButtonProps {
   icon?: React.ReactNode
 }
 
-const variants = {
-  primary: 'bg-forest hover:bg-forest-light text-white',
-  secondary: 'bg-white border border-sand-200 text-ink hover:bg-sand-50',
-  ghost: 'bg-transparent text-ink-muted hover:text-ink hover:bg-sand-100',
-  danger: 'bg-red-50 border border-red-200 text-status-danger hover:bg-red-100',
-  success: 'bg-green-50 border border-green-200 text-status-active hover:bg-green-100',
-}
-
-const sizes = {
-  sm: 'h-9 px-4 text-sm rounded-lg',
-  md: 'h-12 px-5 text-sm rounded-xl',
-  lg: 'h-13 px-6 text-base rounded-xl',
-}
-
 export default function Button({
-  children,
-  variant = 'primary',
-  size = 'md',
-  loading,
-  disabled,
-  fullWidth,
-  onClick,
-  type = 'button',
-  className = '',
-  icon,
+  children, variant = 'primary', size = 'md', loading, disabled,
+  fullWidth, onClick, type = 'button', className = '', icon,
 }: ButtonProps) {
+  const v = {
+    primary: 'bg-accent text-white active:opacity-80',
+    secondary: 'bg-fill text-accent active:bg-sep',
+    ghost: 'text-accent active:opacity-60',
+    danger: 'bg-[#FF3B3020] text-sys-red active:bg-[#FF3B3030]',
+  }[variant]
+
+  const s = {
+    sm: 'h-[34px] px-4 text-[13px] rounded-[8px]',
+    md: 'h-[44px] px-5 text-[15px] rounded-[10px]',
+    lg: 'h-[50px] px-6 text-[15px] rounded-[12px]',
+  }[size]
+
   return (
-    <motion.button
-      whileTap={{ scale: 0.97 }}
-      type={type}
-      onClick={onClick}
-      disabled={disabled || loading}
-      className={`
-        flex items-center justify-center gap-2 font-semibold
-        transition-all duration-150 select-none
-        disabled:opacity-40 disabled:cursor-not-allowed
-        ${variants[variant]} ${sizes[size]}
-        ${fullWidth ? 'w-full' : ''}
-        ${className}
-      `}
-      style={size === 'lg' ? { height: 52 } : undefined}
+    <button
+      type={type} onClick={onClick} disabled={disabled || loading}
+      className={`inline-flex items-center justify-center gap-2 font-semibold select-none transition-opacity disabled:opacity-40 ${v} ${s} ${fullWidth ? 'w-full' : ''} ${className}`}
     >
-      {loading ? (
-        <Loader2 size={18} className="animate-spin" />
-      ) : icon ? (
-        <span>{icon}</span>
-      ) : null}
+      {loading ? <Loader2 size={18} className="animate-spin" /> : icon ? <span>{icon}</span> : null}
       {children}
-    </motion.button>
+    </button>
   )
 }

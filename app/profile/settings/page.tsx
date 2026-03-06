@@ -1,172 +1,110 @@
 'use client'
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import {
-  Bell, Globe, Moon, Shield, Smartphone, Vibrate,
-  ChevronRight, Check
-} from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
 
-interface ToggleProps {
-  checked: boolean
-  onChange: (v: boolean) => void
-}
-
-function Toggle({ checked, onChange }: ToggleProps) {
-  return (
-    <button
-      onClick={() => onChange(!checked)}
-      className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-        checked ? 'bg-forest' : 'bg-sand-100'
-      }`}
-    >
-      <motion.div
-        animate={{ x: checked ? 24 : 2 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow"
-      />
-    </button>
-  )
-}
-
-interface SettingRowProps {
-  icon: React.ElementType
+function ToggleRow({ label, description, value, onChange }: {
   label: string
-  sublabel?: string
-  toggle?: boolean
-  checked?: boolean
-  onToggle?: (v: boolean) => void
-  value?: string
-  onClick?: () => void
-  iconColor?: string
-}
-
-function SettingRow({ icon: Icon, label, sublabel, toggle, checked, onToggle, value, onClick, iconColor = 'text-forest' }: SettingRowProps) {
+  description?: string
+  value: boolean
+  onChange: (v: boolean) => void
+}) {
   return (
-    <div
-      onClick={onClick}
-      className={`flex items-center gap-4 py-4 border-b border-white/5 last:border-0 ${onClick ? 'cursor-pointer' : ''}`}
-    >
-      <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center flex-shrink-0">
-        <Icon size={18} className={iconColor} />
+    <div className="px-4 py-3.5 flex items-center justify-between gap-4">
+      <div className="flex-1 min-w-0">
+        <p className="text-[15px] text-txt">{label}</p>
+        {description && <p className="text-[12px] text-txt-secondary mt-0.5">{description}</p>}
       </div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold text-ink">{label}</p>
-        {sublabel && <p className="text-xs text-sand-400 mt-0.5">{sublabel}</p>}
-      </div>
-      {toggle && onToggle !== undefined && (
-        <Toggle checked={!!checked} onChange={onToggle} />
-      )}
-      {value && (
-        <div className="flex items-center gap-1.5">
-          <span className="text-sand-400 text-sm">{value}</span>
-          {onClick && <ChevronRight size={14} className="text-sand-300" />}
-        </div>
-      )}
+      <button
+        onClick={() => onChange(!value)}
+        className={`relative w-[50px] h-[30px] rounded-full transition-colors shrink-0 ${value ? 'bg-accent' : 'bg-fill'}`}
+      >
+        <div
+          className={`absolute top-[3px] w-6 h-6 bg-white rounded-full transition-transform ${value ? 'translate-x-[22px]' : 'translate-x-[3px]'}`}
+        />
+      </button>
     </div>
   )
 }
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
-    pushEntry: true,
-    pushExit: true,
-    pushPass: true,
-    pushSecurity: true,
-    sound: true,
-    vibration: true,
+    pushNotifications: true,
+    entryAlerts: true,
+    passAlerts: true,
+    securityAlerts: true,
     biometric: false,
-    darkMode: true,
-    language: 'English',
-    twoFactor: false,
+    analytics: false,
   })
 
-  const set = (key: keyof typeof settings) => (val: boolean) =>
-    setSettings(s => ({ ...s, [key]: val }))
+  function toggle(key: keyof typeof settings) {
+    return (v: boolean) => setSettings(s => ({ ...s, [key]: v }))
+  }
 
   return (
-    <div className="min-h-screen bg-sand-50">
+    <div className="phone-frame bg-bg min-h-screen pb-10">
       <PageHeader title="Settings" backPath="/profile" />
 
-      <div className="px-5 pb-8 space-y-5">
+      <div className="px-4 pb-6 space-y-5">
         {/* Notifications */}
-        <section>
-          <p className="text-xs font-bold text-sand-400 uppercase tracking-widest mb-2">Notifications</p>
-          <div className="bg-white border border-sand-200 rounded-2xl px-5">
-            <SettingRow icon={Bell} label="Entry Alerts" sublabel="When your vehicle enters" toggle checked={settings.pushEntry} onToggle={set('pushEntry')} iconColor="text-status-active" />
-            <SettingRow icon={Bell} label="Exit Alerts" sublabel="When your vehicle exits" toggle checked={settings.pushExit} onToggle={set('pushExit')} iconColor="text-sand-400" />
-            <SettingRow icon={Bell} label="Pass Used" sublabel="When a guest pass is scanned" toggle checked={settings.pushPass} onToggle={set('pushPass')} iconColor="text-forest-light" />
-            <SettingRow icon={Shield} label="Security Alerts" sublabel="Denied entries & flagged vehicles" toggle checked={settings.pushSecurity} onToggle={set('pushSecurity')} iconColor="text-status-danger" />
+        <div>
+          <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide mb-1.5">Notifications</p>
+          <div className="bg-surface rounded-[12px] divide-y divide-sep">
+            <ToggleRow
+              label="Push Notifications"
+              description="Receive alerts on this device"
+              value={settings.pushNotifications}
+              onChange={toggle('pushNotifications')}
+            />
+            <ToggleRow
+              label="Entry & Exit Alerts"
+              value={settings.entryAlerts}
+              onChange={toggle('entryAlerts')}
+            />
+            <ToggleRow
+              label="Guest Pass Alerts"
+              value={settings.passAlerts}
+              onChange={toggle('passAlerts')}
+            />
+            <ToggleRow
+              label="Security Alerts"
+              description="Flagged vehicles and unusual activity"
+              value={settings.securityAlerts}
+              onChange={toggle('securityAlerts')}
+            />
           </div>
-        </section>
-
-        {/* Sound & Haptics */}
-        <section>
-          <p className="text-xs font-bold text-sand-400 uppercase tracking-widest mb-2">Sound & Haptics</p>
-          <div className="bg-white border border-sand-200 rounded-2xl px-5">
-            <SettingRow icon={Smartphone} label="Notification Sound" toggle checked={settings.sound} onToggle={set('sound')} />
-            <SettingRow icon={Vibrate} label="Vibration" toggle checked={settings.vibration} onToggle={set('vibration')} />
-          </div>
-        </section>
+        </div>
 
         {/* Security */}
-        <section>
-          <p className="text-xs font-bold text-sand-400 uppercase tracking-widest mb-2">Security</p>
-          <div className="bg-white border border-sand-200 rounded-2xl px-5">
-            <SettingRow icon={Shield} label="Biometric Login" sublabel="Face ID / Fingerprint" toggle checked={settings.biometric} onToggle={set('biometric')} iconColor="text-status-active" />
-            <SettingRow icon={Shield} label="Two-Factor Auth" sublabel="Extra SMS verification" toggle checked={settings.twoFactor} onToggle={set('twoFactor')} iconColor="text-status-warning" />
-          </div>
-        </section>
-
-        {/* Appearance */}
-        <section>
-          <p className="text-xs font-bold text-sand-400 uppercase tracking-widest mb-2">Appearance</p>
-          <div className="bg-white border border-sand-200 rounded-2xl px-5">
-            <SettingRow
-              icon={Moon}
-              label="Dark Mode"
-              sublabel="Optimized for outdoor use"
-              toggle
-              checked={settings.darkMode}
-              onToggle={set('darkMode')}
-              iconColor="text-sand-400"
-            />
-            <SettingRow
-              icon={Globe}
-              label="Language"
-              value={settings.language}
-              onClick={() => {}}
-              iconColor="text-blue-400"
+        <div>
+          <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide mb-1.5">Security</p>
+          <div className="bg-surface rounded-[12px] divide-y divide-sep">
+            <ToggleRow
+              label="Biometric Login"
+              description="Use Face ID or fingerprint"
+              value={settings.biometric}
+              onChange={toggle('biometric')}
             />
           </div>
-        </section>
+        </div>
 
-        {/* Language picker */}
-        <section>
-          <p className="text-xs font-bold text-sand-400 uppercase tracking-widest mb-2">Language</p>
-          <div className="bg-white border border-sand-200 rounded-2xl px-5">
-            {['English', 'العربية'].map(lang => (
-              <button
-                key={lang}
-                onClick={() => setSettings(s => ({ ...s, language: lang }))}
-                className="w-full flex items-center justify-between py-4 border-b border-white/5 last:border-0"
-              >
-                <span className="text-sm font-semibold text-ink">{lang}</span>
-                {settings.language === lang && (
-                  <Check size={18} className="text-forest" />
-                )}
-              </button>
-            ))}
+        {/* Preferences */}
+        <div>
+          <p className="text-[13px] font-semibold text-txt-secondary uppercase tracking-wide mb-1.5">App</p>
+          <div className="bg-surface rounded-[12px] divide-y divide-sep">
+            <ToggleRow
+              label="Usage Analytics"
+              description="Help improve the app"
+              value={settings.analytics}
+              onChange={toggle('analytics')}
+            />
           </div>
-        </section>
+        </div>
 
-        {/* About */}
-        <section>
-          <p className="text-xs font-bold text-sand-400 uppercase tracking-widest mb-2">About</p>
-          <div className="bg-white border border-sand-200 rounded-2xl px-5">
-            <SettingRow icon={Smartphone} label="Version" value="1.0.0" iconColor="text-sand-400" />
-          </div>
-        </section>
+        {/* Version */}
+        <div className="pt-4 text-center">
+          <p className="text-[12px] text-txt-tertiary">Kmpndi v1.0.0</p>
+          <p className="text-[11px] text-txt-tertiary mt-0.5 font-mono">Build 2026.03.06</p>
+        </div>
       </div>
     </div>
   )
