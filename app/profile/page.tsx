@@ -11,8 +11,16 @@ import { currentUser, userUnits, vehicles, guestPasses } from '@/lib/mock-data'
 export default function ProfilePage() {
   const router = useRouter()
   const activePasses = guestPasses.filter(p => p.status === 'active').length
+  const activeUnit = userUnits.find(u => u.id === currentUser.activeUnitId)!
 
   const menuSections = [
+    {
+      title: 'Properties',
+      items: [
+        { label: 'Switch Property', desc: `${userUnits.length} properties`, icon: Repeat, path: '/select-property', badge: userUnits.length },
+        { label: 'My Units', desc: `Currently: Unit ${activeUnit.unit}`, icon: Home, path: '/select-property' },
+      ]
+    },
     {
       title: 'Manage',
       items: [
